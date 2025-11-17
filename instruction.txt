@@ -1,0 +1,63 @@
+cd flask-expense-tracker
+
+ Убедитесь что все файлы на месте:
+ - app.py
+ - requirements.txt
+ - Dockerfile
+ - .dockerignore
+ - templates/index.html
+
+ # Собрать образ
+docker build -t expense-tracker:v1.0 .
+
+# Проверить размер образа (должен быть < 500MB)
+docker images expense-tracker:v1.0
+
+# Тег latest
+docker tag expense-tracker:v1.0 expense-tracker:latest
+
+# Запустить контейнер
+docker run -d -p 5000:5000 --name test-expense expense-tracker:v1.0
+
+# Проверить работу
+curl http://localhost:5000
+
+# Проверить healthcheck
+docker inspect --format='{{.State.Health.Status}}' test-expense
+
+# Остановить и удалить
+docker stop test-expense
+docker rm test-expense
+
+Зарегистрируйтесь на https://hub.docker.com
+Создайте репозиторий expense-tracker
+Сделайте его публичным
+
+# Войти в Docker Hub
+docker login
+
+# Тегировать образ с вашим username
+docker tag expense-tracker:v1.0 YOUR_USERNAME/expense-tracker:v1.0
+docker tag expense-tracker:latest YOUR_USERNAME/expense-tracker:latest
+
+# Загрузить оба тега
+docker push YOUR_USERNAME/expense-tracker:v1.0
+docker push YOUR_USERNAME/expense-tracker:latest
+
+!! Настройка bind mount (10 баллов)
+Создайте файл docker-run-dev.sh:
+
+#!/bin/bash
+
+docker run -d \
+  --name expense-tracker-dev \
+  -p 5000:5000 \
+  -v $(pwd):/app \
+  -e FLASK_ENV=development \
+  YOUR_USERNAME/expense-tracker:latest
+
+echo "Приложение запущено на http://localhost:5000"
+echo "Изменения кода применяются автоматически!"
+
+chmod +x docker-run-dev.sh
+./docker-run-dev.sh
